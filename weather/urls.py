@@ -17,8 +17,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+from weather.views import get_weather
+
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('todo/', include("todo.urls")),
-    path('weather/', include("weather.urls")),
+    path('get/<city_name>', get_weather),
+
 ]
