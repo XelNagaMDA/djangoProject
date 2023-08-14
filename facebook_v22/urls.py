@@ -14,13 +14,19 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
-from django.urls import path, include
+from django.urls import path
+
+from facebook_v22.views import register_user, all_users_view, users_restered_today, regisration_one_day_sooner, \
+    rename_user, make_post, list_posts, delete_user
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('todo/', include("todo.urls")),
-    path('weather/', include("weather.urls")),
-    path('facebook/', include("facebook_v22.urls")),
+    path('register/', register_user),
+    path('list/', all_users_view),
+    path('list/today/', users_restered_today),
+    path('change-date/lower/', regisration_one_day_sooner),
+    path('rename-user/', rename_user),
+    path('post/', make_post),
+    path('list-posts/', list_posts),
+    path('delete-user/', delete_user),
 
 ]
