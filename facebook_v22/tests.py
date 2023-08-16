@@ -14,7 +14,7 @@ class PostTests(TestCase):
     def test_post_length(self):
         client = Client()
         user = User.objects.create(username='victor', password='123456')
-        post_message = 'This message has less than 140 chars' * 140
+        post_message = 'This message has less than 140 chars.' * 140
         response = client.post('/facebook/post/', {'user_id': user.id, 'message': post_message})
         self.assertEqual(response.status_code, 200)
         post = Post.objects.get(message=post_message)
