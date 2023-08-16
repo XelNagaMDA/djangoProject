@@ -1,11 +1,13 @@
 from datetime import datetime, timedelta
 
+from django.db.models import ProtectedError
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from djangoProject.constants import DATE_TIME_FORMAT
 from facebook_v22.models import User, Post
+from facebook_v22.serializers import PostSerializer, UserSerializer
 
 
 # Create your views here.
@@ -20,18 +22,10 @@ def register_user(request):
 
 @api_view(['GET'])
 def all_users_view(request):
-    data = []
     all_users = User.objects.all()
-    for user in all_users:
-        user.say_hi()
-        data.append(
-            dict(
-                un=user.username,
-                id=user.id,
-                passwd=user.password,
-                reg_date=user.registration_date.strftime(DATE_TIME_FORMAT)
-            )
-        )
+    if not all_users:
+        return Response(status=204)
+    data = UserSerializer(all_users, many=True).data
     return Response(status=200, data=data)
 
 
@@ -90,11 +84,7 @@ def list_posts(request):
     data = []
     for post in Post.objects.all():
         data.append(
-            dict(
-                message=post.message,
-                username=post.user.username,
-                post_date=post.post_date.strftime(DATE_TIME_FORMAT)
-            )
+            PostSerializer(post).data
         )
     return Response(status=200, data=data)
 
@@ -102,7 +92,39 @@ def list_posts(request):
 @api_view(['POST'])
 def delete_user(request):
     user_id = request.data.get('id')
-    user = User.objects.get(id=user_id)
-    user.delete()
-    return Response('User deleted successfully.', status=status.HTTP_204_NO_CONTENT)
+    # Validare
+    if not user_id:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    try:
+        # Transformare
+        user = User.objects.get(id=user_id)
+        # Confirmare
+        user.delete()
+        return Response('User deleted successfully.', status=status.HTTP_204_NO_CONTENT)
+    except User.DoesNotExist:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    except ProtectedError as ex:
+        return Response(data=str(ex), status=status.HTTP_406_NOT_ACCEPTABLE)
 
+
+@api_view(['POST'])
+def force_delete_user(request):
+    user_id = request.data.get('id')
+    # Validare
+    if not user_id:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    try:
+        # Transformare
+        user = User.objects.get(id=user_id)
+        # Mai pe lung
+        for post in Post.objects.filter(user=user):
+            post.delete()
+        # Mai pe scurt si mai optimal
+        # Post.objects.filter(user=user).delete()
+        # Confirmare
+        user.delete()
+        return Response('User deleted successfully.', status=status.HTTP_204_NO_CONTENT)
+    except User.DoesNotExist:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    except ProtectedError as ex:
+        return Response(data=str(ex), status=status.HTTP_406_NOT_ACCEPTABLE)

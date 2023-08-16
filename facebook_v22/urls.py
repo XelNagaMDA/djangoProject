@@ -16,8 +16,9 @@ Including another URLconf
 """
 from django.urls import path
 
-from facebook_v22.views import register_user, all_users_view, users_restered_today, regisration_one_day_sooner, \
+from facebook_v22.view import register_user, all_users_view, users_restered_today, regisration_one_day_sooner, \
     rename_user, make_post, list_posts, delete_user
+from facebook_v22.views.comment_views import leave_comment
 
 urlpatterns = [
     path('register/', register_user),
@@ -28,5 +29,5 @@ urlpatterns = [
     path('post/', make_post),
     path('list-posts/', list_posts),
     path('delete-user/', delete_user),
-
+    path('comment/', leave_comment),
 ]

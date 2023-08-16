@@ -13,7 +13,12 @@ class User(models.Model):
     registration_date = models.DateTimeField(default=datetime.now)
 
     @classmethod
-    def create_user(cls, username, password):
+    def create_user(cls, username: str, password):
+        username = username.strip()
+        if not username:
+            raise Exception("Username cant be empty")
+        if len(password) < 6:
+            raise Exception('Password is too short')
         return cls.objects.create(
             username=username,
             password=password
@@ -27,4 +32,12 @@ class Post(models.Model):
     id = models.UUIDField(primary_key=True, null=False, default=uuid4)
     message = models.TextField(null=False)
     user = models.ForeignKey(User, on_delete=models.PROTECT)
-    post_date = models.DateTimeField(default=datetime.now())
+    post_date = models.DateTimeField(default=datetime.now)
+
+
+class Comment(models.Model):
+    id = models.UUIDField(primary_key=True, null=False, default=uuid4)
+    message = models.TextField(null=False)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
+    comment_date = models.DateTimeField(default=datetime.now)
+    post = models.ForeignKey(Post, on_delete=models.PROTECT)
